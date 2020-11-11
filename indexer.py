@@ -23,7 +23,7 @@ def process_json(json_file):
 	for word, frequency in tokens:
 		word_json = json.load(word[0] + '.json')
 		word_json[word][url] = frequency
-		json.dump(word[0] + '.json')
+		json.dump(word[0] + '.json', word_json)
 
 
 	# here we iterate through the words and put them in the corresponding files, along with urls
