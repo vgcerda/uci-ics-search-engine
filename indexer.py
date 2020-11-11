@@ -23,6 +23,7 @@ def build_index(documents):
 		for (token,frequency) in tokens_dict.items():
 			indexes[token].add(tuple("URL from JSON doc", frequency)) #edit the string to get URL from the json doc 
 	return indexes
+    
 
 
 
