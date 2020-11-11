@@ -1,30 +1,24 @@
-import json
-from collections import defaultdict
-from Tokenizer import Json_Tokenizer
-from bs4 import BeautifulSoup
 
-indices = defaultdict(set)
+import json
+import re
+from bs4 import BeautifulSoup
+import defaultdict
+
+for i in 'abcdefghijklmnopqrstuvwxyz':
+	with open(i + '.json', 'w', encoding='utf-8') as f:
+		json.dump(dict(), f)
+
+def tokenize(text, regex):
+	words = defaultdict(int)
+	for word in re.findall(regex, text):
+		words[word]+=1
+	return words
 
 def process_json(json_file):
 	json_dict = json.loads(json_file)
-	indices
+	url = json_dict["url"]
+	encoding = json_dict["encoding"]
+	soup = BeautifulSoup(json_dict[content], 'html.parser')
+	tokens = tokenize(soup.get_text(), reg=r"[a-zA-Z'-]*[a-zA-Z']+")
 
-	
-
-
-
-def build_index(documents):
-	indexes = defaultdict(set) #key = token and value = set of URLS
-	doc_id = 0
-	tokenizer = Tokenize_object()
-	for doc in documents:
-		tokenized_doc = tokenizer.tokenize(doc)
-		tokens_dict = tokenizer.computeWordFrequencies(tokenized_doc)
-		for (token,frequency) in tokens_dict.items():
-			indexes[token].add(tuple("URL from JSON doc", frequency)) #edit the string to get URL from the json doc 
-	return indexes
-    
-
-
-
-
+	# here we iterate through the words and put them in the corresponding files, along with urls
