@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from Tokenizer import Tokenize_object, computeWordFrequencies
+from Tokenizer import Tokenize_object
 
 def build_index(documents):
     indexes = defaultdict(set) #key = token and value = set of URLS
@@ -8,7 +8,7 @@ def build_index(documents):
     tokenizer = Tokenize_object()
     for doc in documents:
         tokenized_doc = tokenizer.tokenize(doc)
-        tokens_dict = computeWordFrequencies(tokenized_doc)
+        tokens_dict = tokenizer.computeWordFrequencies(tokenized_doc)
         for (token,frequency) in tokens_dict.items():
             indexes[token].add(tuple("URL from JSON doc", frequency)) #edit the string to get URL from the json doc 
     return indexes
