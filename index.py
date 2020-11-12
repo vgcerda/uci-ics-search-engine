@@ -37,7 +37,7 @@ class Index:
 	def _process_json(self, json_file):
 		self.num_docs_processed += 1
 		self.num_documents += 1
-		# print("Processing: {}".format(json_file))					# Processes the json file at the given path
+		print("Processing: {}".format(json_file))					# Processes the json file at the given path
 		with open(json_file, 'r') as json_file:						# Parses through each website's contents, tokenizes, 
 			json_dict = json.load(json_file)						#	and performs relevant score calculations
 		url = json_dict["url"]										# Stores token and its postings in the relevant bucket
