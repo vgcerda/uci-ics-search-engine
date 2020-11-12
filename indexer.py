@@ -33,7 +33,8 @@ def tokenize(text, regex):										# Tokenizer
 			words[ps.stem(word.group(0).lower())]+=1
 	return words
 
-def process_json(json_file):									# Processes json file
+def process_json(json_file):
+	print("Processing: {}".format(json_file))									# Processes json file
 	with open(json_file, 'r') as json_file:						# Parses through each website's contents, tokenizes, 
 		json_dict = json.load(json_file)						#	and performs relevant score calculations
 	url = json_dict["url"]										# Writes to INDEX			
@@ -50,7 +51,8 @@ def process_json(json_file):									# Processes json file
 		with open(bucket, 'w') as json_bucket:
 			json.dump(word_json, json_bucket)
 
-def build_index():												# Process all json files in DEV database
+def build_index():
+	create_index_buckets()												# Process all json files in DEV database
 	database_folder = cwd.joinpath('DEV')
 	for file_name in database_folder.iterdir():
 		for json_file in file_name.iterdir:
@@ -58,13 +60,13 @@ def build_index():												# Process all json files in DEV database
 				process_json(json_file)
 
 def test():
+	create_index_buckets()
 	test_path = cwd.joinpath('test')
 	for json_file in test_path.iterdir():
 		if json_file.suffix == '.json':
 			process_json(json_file)
 
 if __name__ == "__main__":
-	create_index_buckets()
 	test()
 
 	# Run test() to test functions on test json files
