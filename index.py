@@ -1,5 +1,4 @@
 import json
-import re
 from bs4 import BeautifulSoup
 from collections import defaultdict
 from pathlib import Path
@@ -28,6 +27,7 @@ class Index:
 					self.process_json(json_file)
 		if self.num_docs_processed < self.dump_threshold:			# Final dumps
 			self.dump()
+		print("FINISHED INDEXING")
 
 	def process_json(self, json_file):
 		self.num_docs_processed += 1
