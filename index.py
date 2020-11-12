@@ -4,7 +4,6 @@ from collections import defaultdict
 from pathlib import Path
 from tokenizer import tokenize
 
-
 # Index class takes in the path of the set of data being indexed,
 #	the path where the index will be dumped, and the threshold
 #	of number of documents to be parsed before dumping the stored
