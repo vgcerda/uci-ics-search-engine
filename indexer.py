@@ -3,8 +3,8 @@ import json
 import re
 from bs4 import BeautifulSoup
 from collections import defaultdict
-import os
 from pathlib import Path, PurePath
+from nltk.stem import PorterStemmer
 
 # TODO:
 #	Import PorterStemmer from nltk.stem to stem words
@@ -17,6 +17,7 @@ from pathlib import Path, PurePath
 
 cwd = Path(Path.cwd())
 INDEX_path = cwd.joinpath('INDEX')
+ps = PorterStemmer()
 
 def create_index_buckets():										# Creates initial word buckets for INDEX
 	for letter in 'abcdefghijklmnopqrstuvwxyz':
@@ -25,8 +26,11 @@ def create_index_buckets():										# Creates initial word buckets for INDEX
 
 def tokenize(text, regex):										# Tokenizer
 	words = defaultdict(int)
-	for word in re.findall(regex, text):
-		words[word]+=1
+	for word in re.finditer(regex, text):
+		if '-' in word.group(0):
+			words[word.group(0).lower()]+=1
+		else:
+			words[ps.stem(word.group(0).lower())]+=1
 	return words
 
 def process_json(json_file):									# Processes json file
@@ -35,7 +39,7 @@ def process_json(json_file):									# Processes json file
 	url = json_dict["url"]										# Writes to INDEX			
 	encoding = json_dict["encoding"]
 	soup = BeautifulSoup(json_dict["content"], 'html.parser')
-	tokens = tokenize(soup.get_text(), r"[a-zA-Z']*[a-zA-Z']+")
+	tokens = tokenize(soup.get_text(), r"[a-zA-Z]+[a-zA-Z'-]*[a-zA-Z']+")
 	for word, frequency in tokens.items():
 		bucket = INDEX_path.joinpath(word[0] + '.json')
 		with open(bucket, 'r') as json_bucket:
@@ -61,6 +65,7 @@ def test():
 
 if __name__ == "__main__":
 	create_index_buckets()
+	test()
 
 	# Run test() to test functions on test json files
 
