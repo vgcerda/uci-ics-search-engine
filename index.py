@@ -35,20 +35,23 @@ class Index:
 		return (self.num_tokens, self.num_documents)
 
 	def _process_json(self, json_file):
-		self.num_docs_processed += 1
-		self.num_documents += 1
-		print("Processing: {}".format(json_file))					# Processes the json file at the given path
-		with open(json_file, 'r') as json_file:						# Parses through each website's contents, tokenizes, 
-			json_dict = json.load(json_file)						#	and performs relevant score calculations
+		with open(json_file, 'r') as f:								# Parses through each website's contents, tokenizes, 
+			json_dict = json.load(f)						#	and performs relevant score calculations
 		url = json_dict["url"]										# Stores token and its postings in the relevant bucket
 		encoding = json_dict["encoding"]							#	in self.index based on the first letter of the word
 		soup = BeautifulSoup(json_dict["content"], 'html.parser')
-		tokens = tokenize(soup.get_text(), r"[a-zA-Z]+[a-zA-Z'-]*[a-zA-Z']+")
-		for word, frequency in tokens.items():
-			bucket = word[0]
-			self.index[bucket][word][url] = frequency
-		if self.num_docs_processed == self.dump_threshold:			# If the threshold for number fo documents parsed is met,
-			self._dump()												#	the current partial index stored is dumped.
+		if bool(soup.find()):										# Checks if text has html, if not, document is ignored
+			self.num_docs_processed += 1
+			self.num_documents += 1
+			print("Processing: {}".format(json_file))					# Processes the json file at the given path
+			tokens = tokenize(soup.get_text(), r"[a-zA-Z]+[a-zA-Z'-]*[a-zA-Z']+")
+			for word, frequency in tokens.items():
+				bucket = word[0]
+				self.index[bucket][word][url] = frequency
+			if self.num_docs_processed == self.dump_threshold:			# If the threshold for number fo documents parsed is met,
+				self._dump()												#	the current partial index stored is dumped.
+		else:
+			print("No HTML: {}".format(json_file))
 
 	def _create_dumps(self, partial_index_num):						# Creates the dump buckets of each numbered partial index.
 		for letter in 'abcdefghijklmnopqrstuvwxyz':
