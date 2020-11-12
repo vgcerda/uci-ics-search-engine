@@ -7,6 +7,7 @@ import os
 from pathlib import Path, PurePath
 
 # TODO:
+#	Import PorterStemmer from nltk.stem to stem words
 #	Calculate td-idf score for each url with each word
 #	Ignore stem words
 #	Refine word processing: stemming, splitting apostrophes, splitting hyphens
