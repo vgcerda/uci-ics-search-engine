@@ -45,24 +45,24 @@ def process_json(json_file):									# Processes json file
 		with open(bucket, 'w') as json_bucket:
 			json.dump(word_json, json_bucket)
 
-# def build_indexer():
-# 	current_directory = Path.cwd()
-# 	folder = os.path.join(current_directory, 'ANALYST')
-# 	for file_name in os.listdir(folder):
-# 		for json_file in os.listdir(file_name):
-# 			if json_file.endswith(".json"):
-# 				process_json(json_file)
+def build_index():												# Process all json files in DEV database
+	database_folder = cwd.joinpath('DEV')
+	for file_name in database_folder.iterdir():
+		for json_file in file_name.iterdir:
+			if json_file.endswith(".json"):
+				process_json(json_file)
 
-
-	# here we iterate through the words and put them in the corresponding files, along with urls
-
+def test():
+	test_path = cwd.joinpath('test')
+	for json_file in test_path.iterdir():
+		if json_file.suffix == '.json':
+			process_json(json_file)
 
 if __name__ == "__main__":
 	create_index_buckets()
 
-	# Run the code below to test the code on test/ folder with 5 json files
-	# test_path = cwd.joinpath('test')
-	# for json_file in test_path.iterdir():
-	# 	if json_file.suffix == '.json':
-	# 		process_json(json_file)
+	# Run test() to test functions on test json files
+
+	# Run build_index() index to build INDEX based on DEV database
+	
 
