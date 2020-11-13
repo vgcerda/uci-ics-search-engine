@@ -57,22 +57,22 @@ class Index:
 		url = json_dict["url"]											# Stores token and its postings in the relevant bucket
 		encoding = json_dict["encoding"]								#	in self.index based on the first letter of the word
 		soup = BeautifulSoup(json_dict["content"], 'html.parser')
-		if bool(soup.find()):											# Checks if text has html, if not, document is ignored
-			self.num_docs_processed += 1
-			self.doc_num += 1
-			print("Processing: {}".format(json_file))					# Processes the json file at the given path
-			self.url_lookup[self.doc_num] = url
-			tokens = tokenize(soup.get_text(), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
-			for word, frequency in tokens.items():
-				if word[0].isdigit():
-					bucket = '0'
-				else:
-					bucket = word[0]
-				self.index[bucket][word][self.doc_num] = frequency
-			if self.num_docs_processed == self.dump_threshold:			# If the threshold for number fo documents parsed is met,
-				self._dump()											#	the current partial index stored is dumped.
-		else:
-			print("No HTML: {}".format(json_file))
+		# if bool(soup.find()):											# Checks if text has html, if not, document is ignored
+		self.num_docs_processed += 1
+		self.doc_num += 1
+		print("Processing: {}".format(json_file))					# Processes the json file at the given path
+		self.url_lookup[self.doc_num] = url
+		tokens = tokenize(soup.get_text(), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
+		for word, frequency in tokens.items():
+			if word[0].isdigit():
+				bucket = '0'
+			else:
+				bucket = word[0]
+			self.index[bucket][word][self.doc_num] = frequency
+		if self.num_docs_processed == self.dump_threshold:			# If the threshold for number fo documents parsed is met,
+			self._dump()											#	the current partial index stored is dumped.
+		# else:
+		# 	print("No HTML: {}".format(json_file))
 
 	def _create_dumps(self, partial_index_num):							# Creates the dump buckets of each numbered partial index.
 		for char in 'abcdefghijklmnopqrstuvwxyz0':
