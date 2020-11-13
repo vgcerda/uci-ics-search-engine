@@ -14,20 +14,31 @@ class Index:
 	def __init__(self, current_working_directory, dataset_path, dump_path, dump_threshold):
 		self.index = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))   # {'a':{'aword':{'url':freq}}, 'b':{'bword':{'url':freq}}}
 		self.url_lookup = {} 													  # {ID:'url'}
+
 		self.cwd = Path(current_working_directory)
 		self.dataset_path = Path(dataset_path)
 		self.dump_path = Path(dump_path)
+
+		assert (self.cwd.is_dir() and self.cwd.exists()), "Index::<current_working_directory> not existing directory"
+		assert (self.dataset_path.is_dir() and self.dataset_path.exists()), "Index::<dataset_path> not existing directory"
+		assert (self.dump_path.is_dir() and self.dump_path.exists()), "Index::<dataset_path> not existing directory"
+
 		self.dump_threshold = dump_threshold
+
+		assert (self.dump_threshold > 0), "Index::<dump_threshold> invalid: must be positive"
+
 		self.num_tokens = 0
 		self.doc_num = 0
 		self.partial_index_num = 0
 		self.num_docs_processed = 0
+		
 
 	def start(self):												# Starts the indexing process
-		for file_name in self.dataset_path.iterdir():
-			for json_file in file_name.iterdir():
-				if json_file.suffix == ".json":
-					self._process_json(json_file)
+		for folder in self.dataset_path.iterdir():
+			if folder.is_dir():
+				for file in folder.iterdir():
+					if file.suffix == ".json":
+						self._process_json(file)
 		if self.num_docs_processed < self.dump_threshold:			# Final dumps
 			self._dump()
 		self._merge()

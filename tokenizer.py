@@ -1,7 +1,7 @@
 import re
 from nltk.stem.snowball import SnowballStemmer
 from collections import defaultdict
-import time
+
 ss = SnowballStemmer('english')
 
 def tokenize(text, regex):										# Tokenizer
