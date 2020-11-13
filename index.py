@@ -34,14 +34,14 @@ class Index:
 		self.num_docs_processed = 0
 		
 
-	def start(self):												# Starts the indexing process
+	def start(self):													# Starts the indexing process
 		start_time = time.time()
 		for folder in self.dataset_path.iterdir():
 			if folder.is_dir():
 				for file in folder.iterdir():
 					if file.suffix == ".json":
 						self._process_json(file)
-		if self.num_docs_processed < self.dump_threshold:			# Final dumps
+		if self.num_docs_processed < self.dump_threshold:				# Final dumps
 			self._dump()
 		self._merge()
 		self._dump_url_lookup()
@@ -52,12 +52,12 @@ class Index:
 		return (self.num_tokens, self.doc_num)
 
 	def _process_json(self, json_file):
-		with open(json_file, 'r') as f:								# Parses through each website's contents, tokenizes, 
-			json_dict = json.load(f)						#	and performs relevant score calculations
-		url = json_dict["url"]										# Stores token and its postings in the relevant bucket
-		encoding = json_dict["encoding"]							#	in self.index based on the first letter of the word
+		with open(json_file, 'r') as f:									# Parses through each website's contents, tokenizes, 
+			json_dict = json.load(f)									#	and performs relevant score calculations
+		url = json_dict["url"]											# Stores token and its postings in the relevant bucket
+		encoding = json_dict["encoding"]								#	in self.index based on the first letter of the word
 		soup = BeautifulSoup(json_dict["content"], 'html.parser')
-		if bool(soup.find()):										# Checks if text has html, if not, document is ignored
+		if bool(soup.find()):											# Checks if text has html, if not, document is ignored
 			self.num_docs_processed += 1
 			self.doc_num += 1
 			print("Processing: {}".format(json_file))					# Processes the json file at the given path
@@ -70,19 +70,19 @@ class Index:
 					bucket = word[0]
 				self.index[bucket][word][self.doc_num] = frequency
 			if self.num_docs_processed == self.dump_threshold:			# If the threshold for number fo documents parsed is met,
-				self._dump()												#	the current partial index stored is dumped.
+				self._dump()											#	the current partial index stored is dumped.
 		else:
 			print("No HTML: {}".format(json_file))
 
-	def _create_dumps(self, partial_index_num):						# Creates the dump buckets of each numbered partial index.
+	def _create_dumps(self, partial_index_num):							# Creates the dump buckets of each numbered partial index.
 		for char in 'abcdefghijklmnopqrstuvwxyz0':
 			with open(self.dump_path.joinpath(char + str(partial_index_num) + '.json'), 'w', encoding='utf-8') as f:
 				json.dump({}, f)
 
 	def _dump(self):													# Dumps current partial index stored in self.index to the 
-		print('DUMPING PARTIAL INDICES')							#	relevant numbered buckets created by create_dumps()
-		self._create_dumps(self.partial_index_num)					#	After each dump, self.index is emptied,
-		for bucket, words in self.index.items():					#	num_docs_processed is reset, and the partial_index_num is increased
+		print('DUMPING PARTIAL INDICES')								#	relevant numbered buckets created by create_dumps()
+		self._create_dumps(self.partial_index_num)						#	After each dump, self.index is emptied,
+		for bucket, words in self.index.items():						#	num_docs_processed is reset, and the partial_index_num is increased
 			with open(self.dump_path.joinpath(bucket + str(self.partial_index_num) + '.json'), 'w', encoding='utf-8') as f:
 				json.dump(self.index[bucket], f)
 		self.index = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
