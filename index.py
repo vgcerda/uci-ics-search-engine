@@ -22,7 +22,7 @@ class Index:
 
 		assert (self.cwd.is_dir() and self.cwd.exists()), "Index::<current_working_directory> not existing directory"
 		assert (self.dataset_path.is_dir() and self.dataset_path.exists()), "Index::<dataset_path> not existing directory"
-		assert (self.dump_path.is_dir() and self.dump_path.exists()), "Index::<dataset_path> not existing directory"
+		assert (self.dump_path.is_dir() and self.dump_path.exists()), "Index::<dump_path> not existing directory"
 
 		self.dump_threshold = dump_threshold
 
