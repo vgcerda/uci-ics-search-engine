@@ -6,10 +6,11 @@ from pathlib import Path
 #	Assign ID's to each url
 
 if __name__ == "__main__":
-	dataset_path = Path(Path.cwd()).joinpath('DEV')
-	dump_path = Path(Path.cwd()).joinpath('INDEX')
+	current_working_directory = Path(Path.cwd())
+	dataset_path = current_working_directory.joinpath('DEV')
+	dump_path = current_working_directory.joinpath('INDEX')
 
-	i = Index(dataset_path, dump_path, 5000)
+	i = Index(current_working_directory, dataset_path, dump_path, 5000)
 	i.start()
 	i_size = i.index_size()
 

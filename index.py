@@ -11,13 +11,15 @@ import os
 #	partial_index.
 
 class Index:
-	def __init__(self, dataset_path, dump_path, dump_threshold):
+	def __init__(self, current_working_directory, dataset_path, dump_path, dump_threshold):
 		self.index = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))   # {'a':{'aword':{'url':freq}}, 'b':{'bword':{'url':freq}}}
+		self.url_lookup = {} 													  # {ID:'url'}
+		self.cwd = Path(current_working_directory)
 		self.dataset_path = Path(dataset_path)
 		self.dump_path = Path(dump_path)
 		self.dump_threshold = dump_threshold
 		self.num_tokens = 0
-		self.num_documents = 0
+		self.doc_num = 0
 		self.partial_index_num = 0
 		self.num_docs_processed = 0
 
@@ -29,10 +31,11 @@ class Index:
 		if self.num_docs_processed < self.dump_threshold:			# Final dumps
 			self._dump()
 		self._merge()
+		self._dump_url_lookup()
 		print("FINISHED INDEXING")
 
 	def index_size(self):
-		return (self.num_tokens, self.num_documents)
+		return (self.num_tokens, self.doc_num)
 
 	def _process_json(self, json_file):
 		with open(json_file, 'r') as f:								# Parses through each website's contents, tokenizes, 
@@ -42,20 +45,24 @@ class Index:
 		soup = BeautifulSoup(json_dict["content"], 'html.parser')
 		if bool(soup.find()):										# Checks if text has html, if not, document is ignored
 			self.num_docs_processed += 1
-			self.num_documents += 1
+			self.doc_num += 1
 			print("Processing: {}".format(json_file))					# Processes the json file at the given path
-			tokens = tokenize(soup.get_text(), r"[a-zA-Z]+[a-zA-Z'-]*[a-zA-Z']+")
+			self.url_lookup[self.doc_num] = url
+			tokens = tokenize(soup.get_text(), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9']+")
 			for word, frequency in tokens.items():
-				bucket = word[0]
-				self.index[bucket][word][url] = frequency
+				if word[0].isdigit():
+					bucket = '0'
+				else:
+					bucket = word[0]
+				self.index[bucket][word][self.doc_num] = frequency
 			if self.num_docs_processed == self.dump_threshold:			# If the threshold for number fo documents parsed is met,
 				self._dump()												#	the current partial index stored is dumped.
 		else:
 			print("No HTML: {}".format(json_file))
 
 	def _create_dumps(self, partial_index_num):						# Creates the dump buckets of each numbered partial index.
-		for letter in 'abcdefghijklmnopqrstuvwxyz':
-			with open(self.dump_path.joinpath(letter + str(partial_index_num) + '.json'), 'w', encoding='utf-8') as f:
+		for char in 'abcdefghijklmnopqrstuvwxyz0':
+			with open(self.dump_path.joinpath(char + str(partial_index_num) + '.json'), 'w', encoding='utf-8') as f:
 				json.dump({}, f)
 
 	def _dump(self):													# Dumps current partial index stored in self.index to the 
@@ -70,17 +77,22 @@ class Index:
 
 	def _merge(self):
 		print("MERGING PARTIAL INDICES")
-		for letter in 'abcdefghijklmnopqrstuvwxyz':
+		for char in 'abcdefghijklmnopqrstuvwxyz0':
 			master_bucket = defaultdict(lambda: defaultdict(int))
 			for partial_bucket_num in range(self.partial_index_num):
-				partial_bucket_path = self.dump_path.joinpath(letter + str(partial_bucket_num) + '.json')
+				partial_bucket_path = self.dump_path.joinpath(char + str(partial_bucket_num) + '.json')
 				with open(partial_bucket_path, 'r', encoding='utf-8') as f:
 					partial_bucket = json.load(f)
 					for token, postings in partial_bucket.items():
 						master_bucket[token].update(postings)
 				os.remove(partial_bucket_path)
-			master_bucket_path = self.dump_path.joinpath(letter + '.json')
+			master_bucket_path = self.dump_path.joinpath(char + '.json')
 			with open(master_bucket_path, 'w', encoding='utf-8') as f:
 				json.dump(master_bucket, f)
 			self.num_tokens+=len(master_bucket)
+
+	def _dump_url_lookup(self):
+		print('DUMPING URL LOOKUP TABLE')
+		with open(self.cwd.joinpath('URL_LOOKUP_TABLE.json'), 'w', encoding='utf-8') as f:
+			json.dump(self.url_lookup, f)
 

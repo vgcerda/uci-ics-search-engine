@@ -1,14 +1,14 @@
 import re
-from nltk.stem import PorterStemmer
+from nltk.stem.snowball import SnowballStemmer
 from collections import defaultdict
-
-ps = PorterStemmer()
+import time
+ss = SnowballStemmer('english')
 
 def tokenize(text, regex):										# Tokenizer
 	words = defaultdict(int)
-	for word in re.finditer(regex, text):
-		if '-' in word.group(0):
-			words[word.group(0).lower()]+=1
+	for word in re.findall(regex, text):
+		if '-' in word or "'" in word:
+			words[word.lower()]+=1
 		else:
-			words[ps.stem(word.group(0).lower())]+=1
+			words[ss.stem(word.lower())]+=1
 	return words
