@@ -4,6 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 from tokenizer import tokenize
 import os
+import time
 
 # Index class takes in the path of the set of data being indexed,
 #	the path where the index will be dumped, and the threshold
@@ -34,6 +35,7 @@ class Index:
 		
 
 	def start(self):												# Starts the indexing process
+		start_time = time.time()
 		for folder in self.dataset_path.iterdir():
 			if folder.is_dir():
 				for file in folder.iterdir():
@@ -44,6 +46,7 @@ class Index:
 		self._merge()
 		self._dump_url_lookup()
 		print("FINISHED INDEXING")
+		print("Execution Time: {}".format(time.time() - start_time))
 
 	def index_size(self):
 		return (self.num_tokens, self.doc_num)
@@ -59,7 +62,7 @@ class Index:
 			self.doc_num += 1
 			print("Processing: {}".format(json_file))					# Processes the json file at the given path
 			self.url_lookup[self.doc_num] = url
-			tokens = tokenize(soup.get_text(), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9']+")
+			tokens = tokenize(soup.get_text(), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
 			for word, frequency in tokens.items():
 				if word[0].isdigit():
 					bucket = '0'
@@ -106,4 +109,3 @@ class Index:
 		print('DUMPING URL LOOKUP TABLE')
 		with open(self.cwd.joinpath('URL_LOOKUP_TABLE.json'), 'w', encoding='utf-8') as f:
 			json.dump(self.url_lookup, f)
-
