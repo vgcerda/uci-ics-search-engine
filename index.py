@@ -122,7 +122,8 @@ class Index:
 					for docID in postings.keys():
 						IDF = 1 + math.log(float(self.doc_num) / float(len(postings)))
 						TF_IDF = postings[docID] * IDF
-						partial_index[token][docID] = (IDF ,round(TF_IDF, 5))
+						partial_index[token][docID] = [IDF ,round(TF_IDF, 5]
+			with open(partial_index_path, 'w', encoding='utf-8') as f:
 				json.dump(partial_index, f)
 
 		
