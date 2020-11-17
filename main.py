@@ -7,11 +7,11 @@ from pathlib import Path
 
 if __name__ == "__main__":
 	current_working_directory = Path(Path.cwd())
-	dataset_path = current_working_directory.joinpath('ANALYST')
+	dataset_path = current_working_directory.joinpath('DEV')
 	dump_path = current_working_directory.joinpath('INDEX')
 	if not dump_path.exists():
 		dump_path.mkdir()
-	i = Index(current_working_directory, dataset_path, dump_path, 1000)
+	i = Index(current_working_directory, dataset_path, dump_path, 5000)
 	i.start()
 	i_size = i.index_size()
 
