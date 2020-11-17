@@ -5,6 +5,7 @@ from pathlib import Path
 from tokenizer import tokenize
 import os
 import time
+import math
 
 # Index class takes in the path of the set of data being indexed,
 #	the path where the index will be dumped, and the threshold
@@ -45,6 +46,7 @@ class Index:
 			self._dump()
 		self._merge()
 		self._dump_url_lookup()
+		self._calculate_IDF_score()
 		print("FINISHED INDEXING")
 		print("Execution Time: {}".format(time.time() - start_time))
 
@@ -63,12 +65,12 @@ class Index:
 		print("Processing: {}".format(json_file))					# Processes the json file at the given path
 		self.url_lookup[self.doc_num] = url
 		tokens = tokenize(soup.get_text(), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
-		for word, frequency in tokens.items():
+		for word, frequency in tokens[0].items():
 			if word[0].isdigit():
 				bucket = '0'
 			else:
 				bucket = word[0]
-			self.index[bucket][word][self.doc_num] = frequency
+			self.index[bucket][word][self.doc_num] = round(float(tokens[0][word]) / float(tokens[1]), 5) # Calculate normalized TF
 		if self.num_docs_processed == self.dump_threshold:			# If the threshold for number fo documents parsed is met,
 			self._dump()											#	the current partial index stored is dumped.
 		# else:
@@ -109,3 +111,18 @@ class Index:
 		print('DUMPING URL LOOKUP TABLE')
 		with open(self.cwd.joinpath('URL_LOOKUP_TABLE.json'), 'w', encoding='utf-8') as f:
 			json.dump(self.url_lookup, f)
+
+	def _calculate_IDF_score(self):
+		print("CALCULATING IDF SCORES")
+		for char in 'abcdefghijklmnopqrstuvwxyz0':						# Line 123 overwrites what what stored before (normalized TF)
+			partial_index_path = self.dump_path.joinpath(char + '.json')
+			with open(partial_index_path, 'r', encoding='utf-8') as f:
+				partial_index = json.load(f)
+				for token, postings in partial_index.items():
+					for docID in postings.keys():
+						IDF = 1 + math.log(float(self.doc_num) / float(len(postings)))
+						TF_IDF = postings[docID] * IDF
+						partial_index[token][docID] = (IDF ,round(TF_IDF, 5))
+				json.dump(partial_index, f)
+
+		
