@@ -1,5 +1,7 @@
 from index import Index
 from pathlib import Path
+import json
+import math
 
 # TODO:
 #	Write a better tokenizer (stems words and accepts numbers, hyphenated words, and words with apostrophes)

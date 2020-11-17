@@ -4,8 +4,9 @@ class Query:
 		self._query = query_string.split()
 
 	def get_relevant_documents(self):
-		for q  in self._query:
-			
+		# for q  in self._query:
+		pass
+
 
 	def _calculate_Cosine_Similarity(self):
 		return 0

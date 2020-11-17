@@ -46,7 +46,7 @@ class Index:
 			self._dump()
 		self._merge()
 		self._dump_url_lookup()
-		self._calculate_IDF_score()
+		self._calculate_TF_IDF_score()
 		print("FINISHED INDEXING")
 		print("Execution Time: {}".format(time.time() - start_time))
 
@@ -112,9 +112,10 @@ class Index:
 		with open(self.cwd.joinpath('URL_LOOKUP_TABLE.json'), 'w', encoding='utf-8') as f:
 			json.dump(self.url_lookup, f)
 
-	def _calculate_IDF_score(self):
+	def _calculate_TF_IDF_score(self):
 		print("CALCULATING IDF SCORES")
 		for char in 'abcdefghijklmnopqrstuvwxyz0':						# Line 123 overwrites what what stored before (normalized TF)
+			print("  for " + char + '.json')
 			partial_index_path = self.dump_path.joinpath(char + '.json')
 			with open(partial_index_path, 'r', encoding='utf-8') as f:
 				partial_index = json.load(f)
