@@ -32,17 +32,6 @@ class Query:
 
 				
 		
-		
-			if json_file[0] == word[0]:
-				with open
-				self_data[word] += json_file[word]
-        
-        # for json_file in self.data_path.iterdir():
-        #     if json_file.is_dir() file.suffix == ".json":
-        #         for word in self._query:
-        #             if json_file[0] == word[0]:
-        #                 self.data[word].append(json_file)
-                
 
 
 
