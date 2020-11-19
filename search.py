@@ -48,3 +48,8 @@ class Query:
 
     def _calculate_Cosine_Similarity(self):
         return 0
+
+if __name__ == "__main__":
+	query = Query("cristina lopes")
+	query.get_relevant_documents()
+	print(query.data.items())
