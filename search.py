@@ -11,6 +11,7 @@ import math
 # Rank words in bold, headers, and other important tags high
 # when intersecting postings, start with the smallest len postings first
 # Required text interface: startMyEngine
+# 	Use TKinter
 # Store positions of words in index file and use seek to get it from an open file using that position
 # 	implemented using term to byte offset dictionary
 # Implement postings class shown in one of the lectures
@@ -85,10 +86,8 @@ class Query:
 			if i == 0:
 				self.relevant_document_ids = set(postings[1].keys())
 			else:
-				print('dawd')
 				self.relevant_document_ids = self.relevant_document_ids.intersection(set(postings[1].keys()))
 			i+=1
-		print(self.relevant_document_ids)
 
 		for docid in self.relevant_document_ids:
 			dot_product = 0
@@ -103,7 +102,7 @@ class Query:
 			document_calc_sqrt = math.sqrt(doc_value_squared)
 			cos_sim = dot_product / (query_calc_sqrt * document_calc_sqrt)
 			self.cosine_similarity.append((docid, cos_sim))
-		self.cosine_similarity = sorted(self.cosine_similarity, key=lambda x: -x[1])			
+		self.cosine_similarity = sorted(self.cosine_similarity, key=lambda x: x[1])			
 
 
 if __name__ == "__main__":
