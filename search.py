@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import time
 from tokenizer import tokenize_query
+import math
 
 
 def load_index(index_path):
@@ -20,8 +21,9 @@ class Query:
 	def __init__(self, query_string, index):
 		self._query = tokenize_query(query_string, r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+") #all tokens are stemmed from the query
 		self._index = index
-		self.result = [] #result is a nested list [[[IDF_Score, {DOCID: TFIDF_SCORE}]]
+		self.result = [] #result is a nested list [[IDF_Score, {DOCID: TFIDF_SCORE}], [IDF_Score, {DOCID: TFIDF_SCORE}], [IDF_Score, {DOCID: TFIDF_SCORE}]]
 		self._get_relevant_documents()
+		self.query_tf = defaultdict(float)
 
 
 	def _get_relevant_documents(self):
@@ -55,7 +57,14 @@ class Query:
 	# 		i += 1
 
 	def _calculate_Cosine_Similarity(self):
-		return 0
+		tf =  float(1.0/len(self._query))
+		total_number_docs = 55393
+		number_doc_with_term = defaultdict(int)
+		for nested_list in self.result:
+			number_doc_with_term += len()
+		
+		IDF =  1 + math.log(total_number_docs/ )
+
 
 if __name__ == "__main__":
 	current_working_directory = Path(Path.cwd())
