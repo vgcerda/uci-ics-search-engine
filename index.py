@@ -127,3 +127,4 @@ class Index:
 						partial_index[token][1][docID] = round(TF_IDF, 5)
 			with open(partial_index_path, 'w', encoding='utf-8') as f:
 				json.dump(partial_index, f)
+
