@@ -14,7 +14,7 @@ import math
 
 class Index:
 	def __init__(self, current_working_directory, dataset_path, dump_path, dump_threshold):
-		self.index = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))   # {'a':{'aword':{'url':freq}}, 'b':{'bword':{'url':freq}}}
+		self.index = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))   # {'a':{'aword': {'url':freq}}, 'b':{'bword':{'url':freq}}}
 		self.url_lookup = {} 													  # {ID:'url'}
 
 		self.cwd = Path(current_working_directory)
@@ -120,11 +120,10 @@ class Index:
 			with open(partial_index_path, 'r', encoding='utf-8') as f:
 				partial_index = json.load(f)
 				for token, postings in partial_index.items():
+					IDF = 1 + math.log(float(self.doc_num) / float(len(postings)))
+					partial_index[token] = [round(IDF, 5), postings]
 					for docID in postings.keys():
-						IDF = 1 + math.log(float(self.doc_num) / float(len(postings)))
 						TF_IDF = postings[docID] * IDF
-						partial_index[token][docID] = [IDF ,round(TF_IDF, 5)]
+						partial_index[token][1][docID] = round(TF_IDF, 5)
 			with open(partial_index_path, 'w', encoding='utf-8') as f:
 				json.dump(partial_index, f)
-
-		
