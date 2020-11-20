@@ -1,4 +1,3 @@
-
 from collections import defaultdict
 from pathlib import Path
 import json
@@ -19,9 +18,9 @@ def load_index(index_path):
 
 class Query:
 	def __init__(self, query_string, index):
-		self._query = tokenize_query(query_string, r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
+		self._query = tokenize_query(query_string, r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+") #all tokens are stemmed from the query
 		self._index = index
-		self.result = []
+		self.result = [] #result is a nested list [[[IDF_Score, {DOCID: TFIDF_SCORE}]]
 		self._get_relevant_documents()
 
 
@@ -30,8 +29,8 @@ class Query:
 			if word[0].isdigit():
 				bucket = '0'
 			else:
-				bucket = word[0]
-			self.result.append(self._index[bucket][word])
+				bucket = word[0] #bucket is either alpha letter or 0 
+			self.result.append(self._index[bucket][word]) #retrieves data from the word and appends doc IDS and posting values(TFIDF scores )
 
 
 	# def get_relevant_documents(self):
@@ -61,11 +60,11 @@ class Query:
 if __name__ == "__main__":
 	current_working_directory = Path(Path.cwd())
 	data_path  = current_working_directory.joinpath('INDEX')
-	index = load_index(data_path)
+	index = load_index(data_path) #Index is a dictionary of all the json files
 
 	query_string = input("Please Enter Your Query: ")
 	start_time = time.time()
-	query = Query(query_string, index)
+	query = Query(query_string, index) #index is passed into the query class
 	print(time.time() - start_time)
 	for item in query.result:
 		print(item)
