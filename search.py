@@ -119,5 +119,5 @@ if __name__ == "__main__":
 	query.calculate_Cosine_Similarity()
 	query.print_results()
 
-	print(time.time() - start_time)
+	print("Search Time: {}".format(time.time() - start_time))
 	
