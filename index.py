@@ -43,6 +43,7 @@ class Index:
 		
 
 	def start(self):													# Starts the indexing process
+		print("INDEXING...")
 		start_time = time.time()
 		for folder in self.dataset_path.iterdir():
 			if folder.is_dir():
@@ -53,7 +54,7 @@ class Index:
 			self._dump()
 		self._merge()
 		self._dump_url_lookup()
-		self._calculate_TF_IDF_score()
+		self._calculate_IDF_score()
 		print("FINISHED INDEXING")
 		print("Execution Time: {}".format(time.time() - start_time))
 
@@ -72,12 +73,28 @@ class Index:
 		# print("Processing: {}".format(json_file))					# Processes the json file at the given path
 		self.url_lookup[self.doc_num] = url
 		tokens = tokenize(soup.get_text(), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
-		for word, frequency in tokens[0].items():
+
+		# To calculate tf-idf score of docs, we are using the scheme lnc (logarithm, no idf, cosine normalization)
+
+		cosine_normalization = 0
+		for word, frequency in tokens.items():
 			if word[0].isdigit():
 				bucket = '0'
 			else:
 				bucket = word[0]
-			self.index[bucket][word][self.doc_num] = round(float(tokens[0][word]) / float(tokens[1]), 5) # Calculate normalized TF
+			normalized_tf = round(1 + math.log(float(frequency)), 15)
+			self.index[bucket][word][self.doc_num] = normalized_tf # Calculate normalized TF
+			cosine_normalization += normalized_tf ** 2
+		cosine_normalization = math.sqrt(cosine_normalization)
+
+		# Apply Cosine Normalization to the tf-idf score
+		for word in tokens.keys():
+			if word[0].isdigit():
+				bucket = '0'
+			else:
+				bucket = word[0]
+			self.index[bucket][word][self.doc_num] = self.index[bucket][word][self.doc_num] / cosine_normalization
+
 		if self.num_docs_processed == self.dump_threshold:			# If the threshold for number fo documents parsed is met,
 			self._dump()											#	the current partial index stored is dumped.
 		# else:
@@ -119,7 +136,7 @@ class Index:
 		with open(self.cwd.joinpath('URL_LOOKUP_TABLE.json'), 'w', encoding='utf-8') as f:
 			json.dump(self.url_lookup, f)
 
-	def _calculate_TF_IDF_score(self):
+	def _calculate_IDF_score(self):
 		print("CALCULATING IDF SCORES")
 		for char in 'abcdefghijklmnopqrstuvwxyz0':						# Line 123 overwrites what what stored before (normalized TF)
 			print("  for " + char + '.json')
@@ -127,10 +144,10 @@ class Index:
 			with open(partial_index_path, 'r', encoding='utf-8') as f:
 				partial_index = json.load(f)
 				for token, postings in partial_index.items():
-					IDF = 1 + math.log(float(self.doc_num) / float(len(postings)))
-					partial_index[token] = [round(IDF, 5), postings]
-					for docID in postings.keys():
-						TF_IDF = postings[docID] * IDF
-						partial_index[token][1][docID] = round(TF_IDF, 5)
+					IDF = math.log(float(self.doc_num) / float(len(postings)))
+					partial_index[token] = [round(IDF, 15), postings]
+					# for docID in postings.keys():
+					# 	TF_IDF = postings[docID] * IDF
+					# 	partial_index[token][1][docID] = round(TF_IDF, 15)
 			with open(partial_index_path, 'w', encoding='utf-8') as f:
 				json.dump(partial_index, f)

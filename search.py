@@ -54,40 +54,33 @@ class Query:
 	def print_results(self):
 		for i in range(len(self.cosine_similarity)):
 			docid = self.cosine_similarity[i][0]
-			print(f'{i + 1}. {self._url_table[docid]}')	
+			print(f'{i + 1}. {self._url_table[docid]}')
 
-	# def get_relevant_documents(self):
-	# 	i = 0
-	# 	current_working_directory = Path(Path.cwd())
-	# 	data_path  = current_working_directory.joinpath('INDEX')
-	# 	current_file = data_path.joinpath(self._query[i][0] + ".json")
-	# 	current_letter = self._query[i][0]
-	# 	with open(current_file, 'r', encoding='utf-8') as f:
-	# 				json_dict = json.load(f)
-	# 	while i < len(self._query):
-	# 		word = self._query[i]
-	# 		if current_letter != word[0]:
-	# 			if word[0].isdigit():
-	# 				current_letter = "0"
-	# 			else:
-	# 				current_letter = word[0]	
-	# 			current_file = data_path.joinpath(word[0] + ".json")
-	# 			with open(current_file, 'r', encoding='utf-8') as f:
-	# 				json_dict = json.load(f)
-	# 		self.data[word] = json_dict[word][1].items()
-	# 		i += 1
+			# The code below is for testing
+			print(self.cosine_similarity[i][1])
+
+
 
 	def calculate_Cosine_Similarity(self):
-		tf =  float(1.0/len(self._query))
-		total_number_docs = 55393
+		tf = 1 # float(1.0/len(self._query))	# 1 / number of words in the query (to get tf of each word in query)
+		
+		# To calculate tf-idf score for queries, we are using the scheme ltc (logarithm, idf, cosine normalization)
+
+		query_cosine_normalization = 0
 		i = 0
 		for word, postings in self.result.items():
-			self.query_tfidf[word] = tf * postings[0]
+			token_tfidf = tf * postings[0]	# tfidf score for each term in the query (postings[0] is the IDF score for the term)
+			self.query_tfidf[word] = token_tfidf
+			query_cosine_normalization += token_tfidf ** 2
 			if i == 0:
 				self.relevant_document_ids = set(postings[1].keys())
 			else:
 				self.relevant_document_ids = self.relevant_document_ids.intersection(set(postings[1].keys()))
 			i+=1
+		query_cosine_normalization = math.sqrt(query_cosine_normalization)
+
+		for word in self.query_tfidf.keys():
+			self.query_tfidf[word] = self.query_tfidf[word] / query_cosine_normalization
 
 		for docid in self.relevant_document_ids:
 			dot_product = 0
@@ -96,13 +89,18 @@ class Query:
 			for word, token_tfidf in self.query_tfidf.items():
 				doc_tfidf = self.result[word][1][docid]
 				dot_product += token_tfidf * doc_tfidf
-				query_value_squared += token_tfidf ** 2
-				doc_value_squared += doc_tfidf ** 2
-			query_calc_sqrt = math.sqrt(query_value_squared)
-			document_calc_sqrt = math.sqrt(doc_value_squared)
-			cos_sim = dot_product / (query_calc_sqrt * document_calc_sqrt)
-			self.cosine_similarity.append((docid, cos_sim))
-		self.cosine_similarity = sorted(self.cosine_similarity, key=lambda x: x[1])			
+
+			# The code below was what was causing the problem. I length normalized all the tf-idf's beforehand so there is no need
+			#	do the normalization again here. The reason is in lecture 21 starting from slide 28.
+			#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			# 	query_value_squared += token_tfidf ** 2
+			# 	doc_value_squared += doc_tfidf ** 2
+			# length_normalization = math.sqrt(query_value_squared * doc_value_squared)
+			# cos_sim = dot_product / length_normalization
+			# self.cosine_similarity.append((docid, cos_sim))
+
+			self.cosine_similarity.append((docid, dot_product))
+		self.cosine_similarity = sorted(self.cosine_similarity, key=lambda x: -x[1])
 
 
 if __name__ == "__main__":
