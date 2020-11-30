@@ -7,6 +7,13 @@ import os
 import time
 import math
 
+#To Do List
+# Use seek instead of loading the whole index into memory.
+# Fix ranking and calculating of tfidf score.
+# Bigrams
+# Take into account titles, strong, h1, h2, h3 ....
+# GUI
+
 # Index class takes in the path of the set of data being indexed,
 #	the path where the index will be dumped, and the threshold
 #	of number of documents to be parsed before dumping the stored
@@ -62,7 +69,7 @@ class Index:
 		# if bool(soup.find()):											# Checks if text has html, if not, document is ignored
 		self.num_docs_processed += 1
 		self.doc_num += 1
-		print("Processing: {}".format(json_file))					# Processes the json file at the given path
+		# print("Processing: {}".format(json_file))					# Processes the json file at the given path
 		self.url_lookup[self.doc_num] = url
 		tokens = tokenize(soup.get_text(), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
 		for word, frequency in tokens[0].items():
@@ -127,4 +134,3 @@ class Index:
 						partial_index[token][1][docID] = round(TF_IDF, 5)
 			with open(partial_index_path, 'w', encoding='utf-8') as f:
 				json.dump(partial_index, f)
-
