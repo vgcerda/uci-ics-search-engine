@@ -7,13 +7,6 @@ import os
 import time
 import math
 
-#To Do List
-# Use seek instead of loading the whole index into memory.
-# Fix ranking and calculating of tfidf score.
-# Bigrams
-# Take into account titles, strong, h1, h2, h3 ....
-# GUI
-
 # Index class takes in the path of the set of data being indexed,
 #	the path where the index will be dumped, and the threshold
 #	of number of documents to be parsed before dumping the stored
@@ -146,8 +139,13 @@ class Index:
 				for token, postings in partial_index.items():
 					IDF = math.log(float(self.doc_num) / float(len(postings)))
 					partial_index[token] = [round(IDF, 15), postings]
+
+					# We will not use IDF for calculating the weight of each document since we're using the scheme lnc
+					#	(check line 70 for comment)
+					#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 					# for docID in postings.keys():
 					# 	TF_IDF = postings[docID] * IDF
 					# 	partial_index[token][1][docID] = round(TF_IDF, 15)
+
 			with open(partial_index_path, 'w', encoding='utf-8') as f:
 				json.dump(partial_index, f)

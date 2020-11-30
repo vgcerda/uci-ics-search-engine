@@ -6,16 +6,14 @@ from tokenizer import tokenize_query
 import math
 
 # TODO:
-# Change Postings Dict to Postings List of tuples.
-# Change calculation of Cosine Similarity
-# Rank words in bold, headers, and other important tags high
-# when intersecting postings, start with the smallest len postings first
-# Required text interface: startMyEngine
-# 	Use TKinter
 # Store positions of words in index file and use seek to get it from an open file using that position
 # 	implemented using term to byte offset dictionary
+# Rank words in bold, headers, and other important tags high
+# Bigrams
+# when intersecting postings, start with the smallest len postings first
+# GUI
+# 	Use TKinter
 # Implement postings class shown in one of the lectures
-
 
 def load_index(index_path):
 	index = defaultdict(dict)
