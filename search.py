@@ -13,7 +13,8 @@ import math
 # when intersecting postings, start with the smallest len postings first
 # GUI
 # 	Use TKinter
-# Implement postings class shown in one of the lectures
+# Implement postings class shown in one of the lectures (lecture 16 slide 31)
+#	doesn't have to be a class but we have to store the fields of the token in the postings list
 
 def load_index(index_path):
 	index = defaultdict(dict)
