@@ -15,7 +15,8 @@ import math
 class Index:
 	def __init__(self, current_working_directory, dataset_path, dump_path, dump_threshold):
 		self.index = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))   # {'a':{'aword': {'url':freq}}, 'b':{'bword':{'url':freq}}}
-		self.url_lookup = {} 													  # {ID:'url'}
+		self.url_lookup = {}													  # {ID:'url'}
+		self.token_byte_offset_dict = {}
 
 		self.cwd = Path(current_working_directory)
 		self.dataset_path = Path(dataset_path)
@@ -45,9 +46,10 @@ class Index:
 						self._process_json(file)
 		if self.num_docs_processed < self.dump_threshold:				# Final dumps
 			self._dump()
-		self._merge()
+		self._merge_partial_indices()
+		self._dump_token_byte_offset_dict()
 		self._dump_url_lookup()
-		self._calculate_IDF_score()
+		# self._calculate_IDF_score()
 		print("FINISHED INDEXING")
 		print("Execution Time: {}".format(time.time() - start_time))
 
@@ -108,9 +110,14 @@ class Index:
 		self.num_docs_processed = 0
 		self.partial_index_num += 1
 
-	def _merge(self):
+	def _merge_partial_indices(self):
 		print("MERGING PARTIAL INDICES")
+
+		final_index_path = self.dump_path.joinpath('index.txt')
+		final_index = open(final_index_path, 'a', encoding='utf-8')
+
 		for char in 'abcdefghijklmnopqrstuvwxyz0':
+			print("    MERGING {}.json INTO INDEX".format(char))
 			master_bucket = defaultdict(lambda: defaultdict(int))
 			for partial_bucket_num in range(self.partial_index_num):
 				partial_bucket_path = self.dump_path.joinpath(char + str(partial_bucket_num) + '.json')
@@ -119,33 +126,53 @@ class Index:
 					for token, postings in partial_bucket.items():
 						master_bucket[token].update(postings)
 				os.remove(partial_bucket_path)
-			master_bucket_path = self.dump_path.joinpath(char + '.json')
-			with open(master_bucket_path, 'w', encoding='utf-8') as f:
-				json.dump(master_bucket, f)
+
 			self.num_tokens+=len(master_bucket)
+
+			for token, postings in master_bucket.items():
+				self.token_byte_offset_dict[token] = final_index.tell()
+				IDF = math.log(float(self.doc_num) / float(len(postings)))
+				top_k_docs = sorted([[docid, tfidf] for docid, tfidf in postings.items()], key=lambda x: -x[1])[:150]
+				top_k_dict = {}
+				for docid, tfidf in top_k_docs:
+					top_k_dict[docid] = tfidf
+				json.dump([token, round(IDF, 15), top_k_dict], final_index)
+				final_index.write('\n')
+
+		final_index.close()
+
+
+			# master_bucket_path = self.dump_path.joinpath(char + '.json')
+			# with open(master_bucket_path, 'w', encoding='utf-8') as f:
+			# 	json.dump(master_bucket, f)
+			
+	def _dump_token_byte_offset_dict(self):
+		print("DUMPING TOKEN TO BYTE OFFSET TABLE")
+		with open(self.cwd.joinpath('BYTE_OFFSET_TABLE.json'), 'w', encoding='utf-8') as f:
+			json.dump(self.token_byte_offset_dict, f)
 
 	def _dump_url_lookup(self):
 		print('DUMPING URL LOOKUP TABLE')
 		with open(self.cwd.joinpath('URL_LOOKUP_TABLE.json'), 'w', encoding='utf-8') as f:
 			json.dump(self.url_lookup, f)
 
-	def _calculate_IDF_score(self):
-		print("CALCULATING IDF SCORES")
-		for char in 'abcdefghijklmnopqrstuvwxyz0':						# Line 123 overwrites what what stored before (normalized TF)
-			print("  for " + char + '.json')
-			partial_index_path = self.dump_path.joinpath(char + '.json')
-			with open(partial_index_path, 'r', encoding='utf-8') as f:
-				partial_index = json.load(f)
-				for token, postings in partial_index.items():
-					IDF = math.log(float(self.doc_num) / float(len(postings)))
-					partial_index[token] = [round(IDF, 15), postings]
+	# def _calculate_IDF_score(self):
+	# 	print("CALCULATING IDF SCORES")
+	# 	for char in 'abcdefghijklmnopqrstuvwxyz0':						# Line 123 overwrites what what stored before (normalized TF)
+	# 		print("  for " + char + '.json')
+	# 		partial_index_path = self.dump_path.joinpath(char + '.json')
+	# 		with open(partial_index_path, 'r', encoding='utf-8') as f:
+	# 			partial_index = json.load(f)
+	# 			for token, postings in partial_index.items():
+	# 				IDF = math.log(float(self.doc_num) / float(len(postings)))
+	# 				partial_index[token] = [round(IDF, 15), postings]
 
-					# We will not use IDF for calculating the weight of each document since we're using the scheme lnc
-					#	(check line 70 for comment)
-					#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-					# for docID in postings.keys():
-					# 	TF_IDF = postings[docID] * IDF
-					# 	partial_index[token][1][docID] = round(TF_IDF, 15)
+	# 				# We will not use IDF for calculating the weight of each document since we're using the scheme lnc
+	# 				#	(check line 70 for comment)
+	# 				#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	# 				# for docID in postings.keys():
+	# 				# 	TF_IDF = postings[docID] * IDF
+	# 				# 	partial_index[token][1][docID] = round(TF_IDF, 15)
 
-			with open(partial_index_path, 'w', encoding='utf-8') as f:
-				json.dump(partial_index, f)
+	# 		with open(partial_index_path, 'w', encoding='utf-8') as f:
+	# 			json.dump(partial_index, f)
