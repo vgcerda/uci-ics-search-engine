@@ -7,25 +7,14 @@ import math
 import heapq
 
 # TODO:
-# Store positions of words in index file and use seek to get it from an open file using that position
-# 	implemented using term to byte offset dictionary
-# Rank words in bold, headers, and other important tags high
+# Try Not normalizing tf-idfs and just store the normalization value in another table
+# 	and use that later to do the cosine similarity with length normalization
+# 	* Figure out what's wrong with cosine similarity/tf-idf calculations
 # Bigrams
-# when intersecting postings, start with the smallest len postings first
 # GUI
 # 	Use TKinter
 # Implement postings class shown in one of the lectures (lecture 16 slide 31)
 #	doesn't have to be a class but we have to store the fields of the token in the postings list
-
-# def load_index(index_path):
-# 	index = defaultdict(dict)
-# 	print("LOADING INDEX")
-# 	for char in 'abcdefghijklmnopqrstuvwxyz0':
-# 		bucket = index_path.joinpath(char+'.json')
-# 		with open(bucket, 'r', encoding='utf-8') as f:
-# 			partial_index = json.load(f)
-# 		index[char] = partial_index
-# 	return index
 
 def load_url_lookup_table(url_lookup_table_path):
 	print("LOADING URL TABLE")
