@@ -65,7 +65,10 @@ class Query:
 				self._index.seek(self._byte_offset_table[token])
 				postings_as_string = self._index.readline()
 				postings = json.loads(postings_as_string)
-				self.relevant_postings[postings[0]] = postings[1:]
+				if postings[1] > 1:
+					self.relevant_postings[postings[0]] = postings[1:]
+				else:
+					delete.add(token)
 			else:
 				delete.add(token)
 		for token in delete:
@@ -141,12 +144,13 @@ if __name__ == "__main__":
 	# index = load_index(data_path) #Index is a dictionary of all the json files
 	url_table = load_url_lookup_table(url_table_path)
 	byte_offset_table = load_byte_offset_table(byte_offset_table_path)
+	index = open(index_path, 'r', encoding='utf-8')
 
 	query_string = input("Please Enter Your Query: ")
 	start_time = time.time()
-	index = open(index_path)
 	query = Query(query_string, index, url_table, byte_offset_table) #index is passed into the query class
 	query.print_results(30)
-
 	print("Search Time: {}".format(time.time() - start_time))
+
+	index.close()
 	

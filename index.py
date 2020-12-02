@@ -2,7 +2,7 @@ import json
 from bs4 import BeautifulSoup
 from collections import defaultdict
 from pathlib import Path
-from tokenizer import tokenize
+from tokenizer import tokenize, get_words
 import os
 import time
 import math
@@ -62,12 +62,35 @@ class Index:
 		url = json_dict["url"]											# Stores token and its postings in the relevant bucket
 		encoding = json_dict["encoding"]								#	in self.index based on the first letter of the word
 		soup = BeautifulSoup(json_dict["content"], 'html.parser')
+		for script in soup(['style', 'script']):
+			script.extract()
+
 		# if bool(soup.find()):											# Checks if text has html, if not, document is ignored
 		self.num_docs_processed += 1
 		self.doc_num += 1
 		# print("Processing: {}".format(json_file))					# Processes the json file at the given path
 		self.url_lookup[self.doc_num] = url
-		tokens = tokenize(soup.get_text(), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
+		
+		tokens = tokenize(soup.get_text(" "), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
+
+		# Add weight to important words
+
+		weighted = set()
+
+		title_tag = soup.find('title')
+		if title_tag:
+			title_text = get_words(title_tag.get_text(" "), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
+			for word in title_text:
+				weighted.add(word)
+				tokens[word] *= 3
+
+		for tag in soup.find_all(["b", "strong", "h1", "h2", "h3", "h4", "h5", "h6"]):
+			if tag:
+				words = get_words(tag.get_text(" "), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
+				for word in words:
+					if word not in weighted:
+						weighted.add(word)
+						tokens[word] *= 2
 
 		# To calculate tf-idf score of docs, we are using the scheme lnc (logarithm, no idf, cosine normalization)
 
@@ -132,11 +155,12 @@ class Index:
 			for token, postings in master_bucket.items():
 				self.token_byte_offset_dict[token] = final_index.tell()
 				IDF = math.log(float(self.doc_num) / float(len(postings)))
-				top_k_docs = sorted([[docid, tfidf] for docid, tfidf in postings.items()], key=lambda x: -x[1])[:150]
+				top_k_docs = sorted([[docid, tfidf] for docid, tfidf in postings.items()], key=lambda x: -x[1])[:5000]
 				top_k_dict = {}
 				for docid, tfidf in top_k_docs:
 					top_k_dict[docid] = tfidf
 				json.dump([token, round(IDF, 15), top_k_dict], final_index)
+				# json.dump([token, round(IDF, 15), postings], final_index)
 				final_index.write('\n')
 
 		final_index.close()
