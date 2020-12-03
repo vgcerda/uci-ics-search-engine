@@ -7,25 +7,18 @@ import math
 import heapq
 
 # TODO:
-# Store positions of words in index file and use seek to get it from an open file using that position
-# 	implemented using term to byte offset dictionary
-# Rank words in bold, headers, and other important tags high
+# Implement MaxScore
+# 	Compute the scores for the first N documents and find the min. After Those documents, any documents that have a lower score
+#	will be skipped.
+#	N is determined by the number of results that the user wants to be shown.
+# Try Not normalizing tf-idfs and just store the normalization value in another table
+# 	and use that later to do the cosine similarity with length normalization
+# 	* Figure out what's wrong with cosine similarity/tf-idf calculations
 # Bigrams
-# when intersecting postings, start with the smallest len postings first
 # GUI
 # 	Use TKinter
 # Implement postings class shown in one of the lectures (lecture 16 slide 31)
 #	doesn't have to be a class but we have to store the fields of the token in the postings list
-
-# def load_index(index_path):
-# 	index = defaultdict(dict)
-# 	print("LOADING INDEX")
-# 	for char in 'abcdefghijklmnopqrstuvwxyz0':
-# 		bucket = index_path.joinpath(char+'.json')
-# 		with open(bucket, 'r', encoding='utf-8') as f:
-# 			partial_index = json.load(f)
-# 		index[char] = partial_index
-# 	return index
 
 def load_url_lookup_table(url_lookup_table_path):
 	print("LOADING URL TABLE")
@@ -87,7 +80,7 @@ class Query:
 			print(f'{i + 1}. {self._url_table[docid]}')
 
 			# The code below is for testing
-			# print(self.cosine_similarity[i][1])
+			print(self.cosine_similarity[i][1])
 
 
 	def _calculate_Cosine_Similarity(self):
@@ -121,17 +114,19 @@ class Query:
 				else:
 					doc_tfidf = 0
 				dot_product += token_tfidf * doc_tfidf
+				query_value_squared += token_tfidf ** 2
+				doc_value_squared += doc_tfidf ** 2
 
 			# The code below was what was causing the problem. I length normalized all the tf-idf's beforehand so there is no need
 			#	do the normalization again here. The reason is in lecture 21 starting from slide 28.
 			#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			# 	query_value_squared += token_tfidf ** 2
 			# 	doc_value_squared += doc_tfidf ** 2
-			# length_normalization = math.sqrt(query_value_squared * doc_value_squared)
-			# cos_sim = dot_product / length_normalization
+			length_normalization = math.sqrt(query_value_squared * doc_value_squared)
+			cos_sim = dot_product / length_normalization
 			# self.cosine_similarity.append((docid, cos_sim))
 
-			self.cosine_similarity.append((docid, dot_product))
+			self.cosine_similarity.append((docid, cos_sim))
 		self.cosine_similarity = sorted(self.cosine_similarity, key=lambda x: -x[1])
 
 
