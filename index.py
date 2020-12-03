@@ -94,7 +94,17 @@ class Index:
 
 		# To calculate tf-idf score of docs, we are using the scheme lnc (logarithm, no idf, cosine normalization)
 
-		cosine_normalization = 0
+		# cosine_normalization = 0
+		# for word, frequency in tokens.items():
+		# 	if word[0].isdigit():
+		# 		bucket = '0'
+		# 	else:
+		# 		bucket = word[0]
+		# 	normalized_tf = round(1 + math.log(float(frequency)), 15)
+		# 	self.index[bucket][word][self.doc_num] = normalized_tf # Calculate normalized TF
+		# 	cosine_normalization += normalized_tf ** 2
+		# cosine_normalization = math.sqrt(cosine_normalization)
+
 		for word, frequency in tokens.items():
 			if word[0].isdigit():
 				bucket = '0'
@@ -102,16 +112,15 @@ class Index:
 				bucket = word[0]
 			normalized_tf = round(1 + math.log(float(frequency)), 15)
 			self.index[bucket][word][self.doc_num] = normalized_tf # Calculate normalized TF
-			cosine_normalization += normalized_tf ** 2
-		cosine_normalization = math.sqrt(cosine_normalization)
 
 		# Apply Cosine Normalization to the tf-idf score
-		for word in tokens.keys():
-			if word[0].isdigit():
-				bucket = '0'
-			else:
-				bucket = word[0]
-			self.index[bucket][word][self.doc_num] = self.index[bucket][word][self.doc_num] / cosine_normalization
+
+		# for word in tokens.keys():
+		# 	if word[0].isdigit():
+		# 		bucket = '0'
+		# 	else:
+		# 		bucket = word[0]
+		# 	self.index[bucket][word][self.doc_num] = self.index[bucket][word][self.doc_num] / cosine_normalization
 
 		if self.num_docs_processed == self.dump_threshold:			# If the threshold for number fo documents parsed is met,
 			self._dump()											#	the current partial index stored is dumped.
@@ -155,12 +164,18 @@ class Index:
 			for token, postings in master_bucket.items():
 				self.token_byte_offset_dict[token] = final_index.tell()
 				IDF = math.log(float(self.doc_num) / float(len(postings)))
-				top_k_docs = sorted([[docid, tfidf] for docid, tfidf in postings.items()], key=lambda x: -x[1])[:5000]
-				top_k_dict = {}
-				for docid, tfidf in top_k_docs:
-					top_k_dict[docid] = tfidf
-				json.dump([token, round(IDF, 15), top_k_dict], final_index)
-				# json.dump([token, round(IDF, 15), postings], final_index)
+
+				for docid in postings.keys():
+					master_bucket[token][docid] = round(master_bucket[token][docid] * IDF, 15) 
+
+				# top_k_docs = sorted([[docid, tfidf] for docid, tfidf in postings.items()], key=lambda x: -x[1])[:5000]
+				# top_k_dict = {}
+				# for docid, tfidf in top_k_docs:
+				# 	top_k_dict[docid] = tfidf
+
+				# json.dump([token, round(IDF, 15), top_k_dict], fisnal_index)
+
+				json.dump([token, round(IDF, 15), postings], final_index)
 				final_index.write('\n')
 
 		final_index.close()

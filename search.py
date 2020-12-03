@@ -42,6 +42,7 @@ class Search:
 		self.relevant_postings = {} #result is a dictionary {word:[IDF, {docid:tfidf], word:[IDF, {docid:tfidf], word:[IDF, {docid:tfidf]}
 
 		self.query_tfidf = defaultdict(float)
+		self.scores = []
 		self.cosine_similarity = []  # [(docID1, cosine_similarity), (docid2, cosinesimilarity)]
 
 		current_working_directory = Path(Path.cwd())
@@ -51,12 +52,13 @@ class Search:
 		self._index = open(index_path, 'r', encoding='utf-8')  # Index is an open file on which we can perform seek and readline operations
 		
 		self._get_relevant_postings()
-		self._calculate_Cosine_Similarity()
+		self._calculate_Scores()
+		# self._calculate_Cosine_Scores()
 
 		self._index.close()
 
 	def return_results(self):
-		for docid, _ in self.cosine_similarity:
+		for docid, _ in self.scores:
 			yield self._url_table[docid]
 
 	def _get_relevant_postings(self):
@@ -76,15 +78,35 @@ class Search:
 			self._query.remove(token)
 
 	def print_results(self, k):
-		for i in range(len(self.cosine_similarity[:k])):
-			docid = self.cosine_similarity[i][0]
+
+		for i in range(len(self.scores[:k])):
+			docid = self.scores[i][0]
 			print(f'{i + 1}. {self._url_table[docid]}')
 
 			# The code below is for testing
 			# print(self.cosine_similarity[i][1])
 
+	def _calculate_Scores(self):
+		i = 0
+		for word, postings in self.relevant_postings.items():
+			if i == 0:
+				self.relevant_document_ids = set(postings[1].keys())
+			else:
+				self.relevant_document_ids = self.relevant_document_ids.union(set(postings[1].keys()))
 
-	def _calculate_Cosine_Similarity(self):
+		for docid in self.relevant_document_ids:
+			score = 0
+			for word in self._query:
+				if docid in self.relevant_postings[word][1]:
+					doc_tfidf = self.relevant_postings[word][1][docid]
+				else:
+					doc_tfidf = 0
+				score += doc_tfidf
+			self.scores.append((docid, score))
+
+		self.scores.sort(key=lambda x: -x[1])
+
+	def _calculate_Cosine_Scores(self):
 		tf = 1 # float(1.0/len(self._query))	# 1 / number of words in the query (to get tf of each word in query)
 		
 		# To calculate tf-idf score for queries, we are using the scheme ltc (logarithm, idf, cosine normalization)
@@ -141,8 +163,7 @@ if __name__ == "__main__":
 	query_string = input("Please Enter Your Query: ")
 	start_time = time.time()
 	query = Search(query_string, url_table, byte_offset_table) #index is passed into the query class
-	query._print_results(30)
+	query.print_results(30)
 	print("Search Time: {}".format(time.time() - start_time))
-
 	
 	
