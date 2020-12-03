@@ -43,6 +43,9 @@ class Search:
 
 		self.query_tfidf = defaultdict(float)
 		self.scores = []
+
+		heapq.heapify(self.scores)
+
 		self.cosine_similarity = []  # [(docID1, cosine_similarity), (docid2, cosinesimilarity)]
 
 		current_working_directory = Path(Path.cwd())
@@ -57,9 +60,17 @@ class Search:
 
 		self._index.close()
 
-	def return_results(self):
-		for docid, _ in self.scores:
-			yield self._url_table[docid]
+	def return_results(self, k):
+		for i in range(k):
+			try:
+				yield self._url_table[self.scores[i][1]]
+			except IndexError:
+				return
+		# for i in range(k):
+		# 	try:
+		# 		yield self._url_table[heapq.heappop(self.scores)[1]]
+		# 	except IndexError:
+		# 		return
 
 	def _get_relevant_postings(self):
 		delete = set()
@@ -78,10 +89,8 @@ class Search:
 			self._query.remove(token)
 
 	def print_results(self, k):
-
-		for i in range(len(self.scores[:k])):
-			docid = self.scores[i][0]
-			print(f'{i + 1}. {self._url_table[docid]}')
+		for i in self.return_results(k):
+			print(i)
 
 			# The code below is for testing
 			# print(self.cosine_similarity[i][1])
@@ -102,9 +111,13 @@ class Search:
 				else:
 					doc_tfidf = 0
 				score += doc_tfidf
-			self.scores.append((docid, score))
 
-		self.scores.sort(key=lambda x: -x[1])
+			# heapq.heappush(self.scores, (-score, docid))
+
+			self.scores.append((score, docid))
+		# x = time.time()
+		self.scores.sort(key=lambda x: -x[0])
+		# print(time.time() - x)
 
 	def _calculate_Cosine_Scores(self):
 		tf = 1 # float(1.0/len(self._query))	# 1 / number of words in the query (to get tf of each word in query)
@@ -162,8 +175,8 @@ if __name__ == "__main__":
 
 	query_string = input("Please Enter Your Query: ")
 	start_time = time.time()
-	query = Search(query_string, url_table, byte_offset_table) #index is passed into the query class
-	query.print_results(30)
+	search = Search(query_string, url_table, byte_offset_table) #index is passed into the query class
+	search.print_results(30)
 	print("Search Time: {}".format(time.time() - start_time))
 	
 	

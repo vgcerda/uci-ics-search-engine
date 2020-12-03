@@ -168,14 +168,14 @@ class Index:
 				for docid in postings.keys():
 					master_bucket[token][docid] = round(master_bucket[token][docid] * IDF, 15) 
 
-				# top_k_docs = sorted([[docid, tfidf] for docid, tfidf in postings.items()], key=lambda x: -x[1])[:5000]
-				# top_k_dict = {}
-				# for docid, tfidf in top_k_docs:
-				# 	top_k_dict[docid] = tfidf
+				top_k_docs = sorted([[docid, tfidf] for docid, tfidf in postings.items()], key=lambda x: -x[1])[:2500]
+				top_k_dict = {}
+				for docid, tfidf in top_k_docs:
+					top_k_dict[docid] = tfidf
 
-				# json.dump([token, round(IDF, 15), top_k_dict], fisnal_index)
+				json.dump([token, round(IDF, 15), top_k_dict], final_index)
 
-				json.dump([token, round(IDF, 15), postings], final_index)
+				# json.dump([token, round(IDF, 15), postings], final_index)
 				final_index.write('\n')
 
 		final_index.close()
@@ -215,3 +215,15 @@ class Index:
 
 	# 		with open(partial_index_path, 'w', encoding='utf-8') as f:
 	# 			json.dump(partial_index, f)
+
+if __name__ == "__main__":
+	current_working_directory = Path(Path.cwd())
+	dataset_path = current_working_directory.joinpath('DEV')
+	dump_path = current_working_directory.joinpath('INDEX')
+	if not dump_path.exists():
+		dump_path.mkdir()
+	i = Index(current_working_directory, dataset_path, dump_path, 5000)
+	i.start()
+	i_size = i.index_size()
+
+	print("Number of Tokens: {}\nNumber of Documents: {}".format(i_size[0], i_size[1]))
