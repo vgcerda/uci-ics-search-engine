@@ -1,0 +1,91 @@
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <style> 
+      
+    .container{
+        vertical-align: middle;
+        font-family: 'Georgia';
+        color: black
+        font-weight: bold}
+    .fill-height{
+        padding-top: 225px;
+        padding-bottom: 250px; 
+        min-height: 100%;
+        height:100vh;
+        }
+    body{ 
+        font-size: 56
+        
+    }
+
+    h1{
+        color: white;
+        font-size: 100;
+        text-shadow: -3px 0 black, 0 3px black, 3px 0 black, 0 -3px black;
+    }
+
+    h3{
+        color:powderblue;
+        font-size: 75;
+        text-shadow: -3px 0 black, 0 3px black, 3px 0 black, 0 -3px black;
+    }
+
+    .box{
+    width: 100%;
+    text-align:center;
+}
+
+input[type="t"]{  
+                text-align: center;
+                font-family: 'Courier New'
+            } 
+div {
+	width: 100px;
+	height: 100px;
+	
+	position: absolute;
+	top:0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+  	
+	margin: auto;
+}
+
+div1 {
+	width: 100px;
+	height: 100px;
+	
+	position: absolute;
+	top:0;
+	bottom: 30%;
+	left: 0px;
+	right: 9%;
+  	
+	margin: auto;
+}
+
+      </style>
+</head>
+<center><body style = background-color:#d0d0ff;>
+    
+    
+    <div1>
+        <h1>Zoogle</h1>
+    </div1>
+    
+
+
+    <form action ="/base" style="width:500px; margin:auto" method="POST">
+        <div class="box">
+            <input type="t" id="search" placeholder="Search" />
+        </div>
+	</form>
+    
+    <form action ="/search" style="width:500px; margin:auto" method="POST">
+        <div class="box">
+            <input type="t" name="query" id="query" placeholder="Search">
+        </form>
+    
+</body></center>
+
