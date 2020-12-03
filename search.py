@@ -51,6 +51,17 @@ class Query:
 		self._get_relevant_postings()
 		self._calculate_Cosine_Similarity()
 
+	def start(self):
+		current_working_directory = Path(Path.cwd())
+		data_path  = current_working_directory.joinpath('INDEX')
+		index_path = data_path.joinpath("index.txt")
+		url_table_path = current_working_directory.joinpath('URL_LOOKUP_TABLE.json')
+		byte_offset_table_path = current_working_directory.joinpath("BYTE_OFFSET_TABLE.json")
+		# index = load_index(data_path) #Index is a dictionary of all the json files
+		url_table = load_url_lookup_table(url_table_path)
+		byte_offset_table = load_byte_offset_table(byte_offset_table_path)
+		index = open(index_path, 'r', encoding='utf-8')
+
 	def _get_relevant_postings(self):
 		delete = set()
 		for token in self._query:
@@ -130,16 +141,16 @@ class Query:
 		self.cosine_similarity = sorted(self.cosine_similarity, key=lambda x: -x[1])
 
 
-if __name__ == "__main__":
-	current_working_directory = Path(Path.cwd())
-	data_path  = current_working_directory.joinpath('INDEX')
-	index_path = data_path.joinpath("index.txt")
-	url_table_path = current_working_directory.joinpath('URL_LOOKUP_TABLE.json')
-	byte_offset_table_path = current_working_directory.joinpath("BYTE_OFFSET_TABLE.json")
-	# index = load_index(data_path) #Index is a dictionary of all the json files
-	url_table = load_url_lookup_table(url_table_path)
-	byte_offset_table = load_byte_offset_table(byte_offset_table_path)
-	index = open(index_path, 'r', encoding='utf-8')
+# if __name__ == "__main__":
+# 	current_working_directory = Path(Path.cwd())
+# 	data_path  = current_working_directory.joinpath('INDEX')
+# 	index_path = data_path.joinpath("index.txt")
+# 	url_table_path = current_working_directory.joinpath('URL_LOOKUP_TABLE.json')
+# 	byte_offset_table_path = current_working_directory.joinpath("BYTE_OFFSET_TABLE.json")
+# 	# index = load_index(data_path) #Index is a dictionary of all the json files
+# 	url_table = load_url_lookup_table(url_table_path)
+# 	byte_offset_table = load_byte_offset_table(byte_offset_table_path)
+# 	index = open(index_path, 'r', encoding='utf-8')
 
 	query_string = input("Please Enter Your Query: ")
 	start_time = time.time()

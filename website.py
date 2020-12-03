@@ -1,5 +1,5 @@
 from flask import Flask, url_for, render_template, request, redirect
-import search
+from search import Query
 
 app = Flask(__name__)
 
@@ -13,7 +13,7 @@ def base():
 
 
 @app.route('/search',  methods = ["POST", "GET"])
-def search():
+def s():
     if request.method == 'POST':
         search = request.form['query']
         print(search) #put search buttons here
