@@ -56,8 +56,8 @@ class Search:
 		self._index.close()
 
 	def return_results(self):
-		for url, _ in self.cosine_similarity:
-			yield url
+		for docid, _ in self.cosine_similarity:
+			yield self._url_table[docid]
 
 	def _get_relevant_postings(self):
 		delete = set()

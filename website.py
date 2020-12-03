@@ -31,9 +31,8 @@ def base():
 def s():
 	if request.method == 'POST':
 		query = request.form['query']
-		results = Search(query).return_results()
-	
-	return render_template('search.html')
+		results = Search(query, url_table, byte_offset_table).return_results()
+		return render_template('search.html', result = results)  #, results = results
 
 if __name__ == "__main__":
 		

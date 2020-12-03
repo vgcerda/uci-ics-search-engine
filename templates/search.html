@@ -1,8 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Display Patients{% endblock %}
+{% block title %}Search Results{% endblock %}
 {% block content %}
-
-<!-- <style>
+<style>
 table{
     width:85%;
     border:20px;
@@ -14,33 +13,27 @@ th{
 }
 </style>
 
-<center><table class="centered thick-border">
-    <tr>
-            <th>ID &nbsp;</th>
-            <th>Assigned Doctor &nbsp;</th>
-            <th>First Name &nbsp;</th>
-            <th>Last Name &nbsp;</th>
-            <th>Birthdate &nbsp;</th>
-            <th>Phone Number &nbsp;</th>
-            <th>Drug Currently Taking &nbsp;</th>
-    </tr>
-    {% for k in patients%}
-            <tr>
-                    <td>{{ k.ID }}</td>
-                    &nbsp;
-                    <td>{{ k.doctor }}</td>
-                    &nbsp;
-                    <td>{{ k.firstname.upper() }}</td>
-                    &nbsp;
-                    <td>{{ k.lastname.upper() }}</td>
-                    &nbsp;
-                    <td>{{ k.birthday}}</td>
-                    &nbsp;
-                    <td>{{ k.phone}}</td>
-                    &nbsp;
-                    <td>{{ k.drug.name.upper()}}</td>
-            </tr>
-    {% endfor %}
-</table></center> -->
+<center><body style = background-color:#d0d0ff;>
+    
+    <div1>
+        <h1 style="font-family: Georgia">Zoogle</h1>
+    </div1>
 
-  {% endblock %}
+    <form action ="/search" style="width:500px; margin:auto" method="POST">
+        <div class="box">
+            <input type="t" name="query" id="query" placeholder="Search">
+        </div>
+    </form>
+    
+</body></center>
+
+<center><table class="centered thick-border">
+    <ul>
+    {% for url in result%}
+            <tr>
+                    <td>{{ url }}</td>
+            </tr>
+    </ul>
+    {% endfor %}
+</table></center>
+{% endblock %}
