@@ -16,7 +16,7 @@ th{
 <center><body style = background-color:#d0d0ff;>
     
     <div1>
-        <h1 style="font-family: Georgia">Zoogle</h1>
+        <h1 style="font-family: Georgia;color:#04253a">{{ query }}</h1>
     </div1>
 
     <form action ="/search" style="width:500px; margin:auto" method="POST">
@@ -28,10 +28,10 @@ th{
 </body></center>
 
 <center><table class="centered thick-border">
-    {% for url in result%}
+    {% for i, url in result%}
     <ul>
             <tr>
-                    <td>{{ url }}</td>
+                    <td>{{ i }}.</td><td>{{ url }}</td>
             </tr>
     </ul>
     {% endfor %}

@@ -32,7 +32,7 @@ def s():
 	if request.method == 'POST':
 		query = request.form['query']
 		results = Search(query, url_table, byte_offset_table).return_results(10)
-		return render_template('search.html', result = results)  #, results = results
+		return render_template('search.html', result = results, query = query)  #, results = results
 
 if __name__ == "__main__":
 		

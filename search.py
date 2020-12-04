@@ -61,14 +61,24 @@ class Search:
 		self._index.close()
 
 	def return_results(self, k):
+		# For outputting docs determined by tfidf and using a sorted list
 		# for i in range(k):
 		# 	try:
 		# 		yield self._url_table[self.scores[i][1]]
 		# 	except IndexError:
 		# 		return
+
+		# For outputting docs determined by cosine similiarity
+		# for i in range(k):
+		# 	try:
+		# 		yield self._url_table[self.cosine_similarity[i][1]]
+		# 	except IndexError:
+		# 		return
+
+		# For outputting docs determined by tfidf and using heap
 		for i in range(k):
 			try:
-				yield self._url_table[heapq.heappop(self.scores)[1]]
+				yield (i + 1, self._url_table[heapq.heappop(self.scores)[1]])
 			except IndexError:
 				return
 
@@ -162,8 +172,8 @@ class Search:
 			cos_sim = dot_product / length_normalization
 			# self.cosine_similarity.append((docid, cos_sim))
 
-			self.cosine_similarity.append((docid, cos_sim))
-		self.cosine_similarity = sorted(self.cosine_similarity, key=lambda x: -x[1])
+			self.cosine_similarity.append((cos_sim, docid))
+		self.cosine_similarity = sorted(self.cosine_similarity, key=lambda x: -x[0])
 
 
 if __name__ == "__main__":
