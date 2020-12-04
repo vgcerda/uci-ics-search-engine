@@ -61,16 +61,16 @@ class Search:
 		self._index.close()
 
 	def return_results(self, k):
-		for i in range(k):
-			try:
-				yield self._url_table[self.scores[i][1]]
-			except IndexError:
-				return
 		# for i in range(k):
 		# 	try:
-		# 		yield self._url_table[heapq.heappop(self.scores)[1]]
+		# 		yield self._url_table[self.scores[i][1]]
 		# 	except IndexError:
 		# 		return
+		for i in range(k):
+			try:
+				yield self._url_table[heapq.heappop(self.scores)[1]]
+			except IndexError:
+				return
 
 	def _get_relevant_postings(self):
 		delete = set()
@@ -112,11 +112,11 @@ class Search:
 					doc_tfidf = 0
 				score += doc_tfidf
 
-			# heapq.heappush(self.scores, (-score, docid))
+			heapq.heappush(self.scores, (-score, docid))
 
-			self.scores.append((score, docid))
+			# self.scores.append((score, docid))
 		# x = time.time()
-		self.scores.sort(key=lambda x: -x[0])
+		# self.scores.sort(key=lambda x: -x[0])
 		# print(time.time() - x)
 
 	def _calculate_Cosine_Scores(self):
@@ -175,7 +175,9 @@ if __name__ == "__main__":
 
 	query_string = input("Please Enter Your Query: ")
 	start_time = time.time()
+	t = time.time()
 	search = Search(query_string, url_table, byte_offset_table) #index is passed into the query class
+	print(time.time() - t)
 	search.print_results(30)
 	print("Search Time: {}".format(time.time() - start_time))
 	
