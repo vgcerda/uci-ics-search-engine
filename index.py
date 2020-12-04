@@ -2,6 +2,7 @@ import json
 from bs4 import BeautifulSoup
 from collections import defaultdict
 from pathlib import Path
+import glob
 from tokenizer import tokenize, get_words
 import os
 import time
@@ -39,11 +40,15 @@ class Index:
 	def start(self):													# Starts the indexing process
 		print("INDEXING...")
 		start_time = time.time()
-		for folder in self.dataset_path.iterdir():
-			if folder.is_dir():
-				for file in folder.iterdir():
-					if file.suffix == ".json":
-						self._process_json(file)
+		files_to_be_indexed = glob.glob(str(self.dataset_path.joinpath("*").joinpath("*.json")))
+		print(len(files_to_be_indexed))
+		for file in files_to_be_indexed:
+			self._process_json(file)
+		# for folder in self.dataset_path.iterdir():
+		# 	if folder.is_dir():
+		# 		for file in folder.iterdir():
+		# 			if file.suffix == ".json":
+		# 				self._process_json(file)
 		if self.num_docs_processed < self.dump_threshold:				# Final dumps
 			self._dump()
 		self._merge_partial_indices()
