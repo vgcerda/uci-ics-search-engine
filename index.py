@@ -38,10 +38,9 @@ class Index:
 		
 
 	def start(self):													# Starts the indexing process
-		print("INDEXING...")
-		start_time = time.time()
 		files_to_be_indexed = glob.glob(str(self.dataset_path.joinpath("*").joinpath("*.json")))
-		print(len(files_to_be_indexed))
+		print("INDEXING {} FILES...".format(len(files_to_be_indexed)))
+		start_time = time.time()
 		for file in files_to_be_indexed:
 			self._process_json(file)
 		# for folder in self.dataset_path.iterdir():
