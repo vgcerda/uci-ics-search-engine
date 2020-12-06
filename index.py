@@ -7,6 +7,7 @@ from tokenizer import tokenize, get_words
 import os
 import time
 import math
+from simhash import Simhash
 
 # Index class takes in the path of the set of data being indexed,
 #	the path where the index will be dumped, and the threshold
@@ -18,6 +19,7 @@ class Index:
 		self.index = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))   # {'a':{'aword': {'url':freq}}, 'b':{'bword':{'url':freq}}}
 		self.url_lookup = {}													  # {ID:'url'}
 		self.token_byte_offset_dict = {}
+		self.fingerprints = set()
 
 		self.cwd = Path(current_working_directory)
 		self.dataset_path = Path(dataset_path)
@@ -67,69 +69,72 @@ class Index:
 		encoding = json_dict["encoding"]								#	in self.index based on the first letter of the word
 		soup = BeautifulSoup(json_dict["content"], 'html.parser')
 		for script in soup(['style', 'script']):
-			script.extract()
-
-		# if bool(soup.find()):											# Checks if text has html, if not, document is ignored
-		self.num_docs_processed += 1
-		self.doc_num += 1
-		# print("Processing: {}".format(json_file))					# Processes the json file at the given path
-		self.url_lookup[self.doc_num] = url
+			script.extract()	
 		
 		tokens = tokenize(soup.get_text(" "), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
 
-		# Add weight to important words
+		# Creates a fingerprint for the document
+		fingerprint = Simhash(tokens)
 
-		weighted = set()
+		# Checks if there is an exact duplicate of the document that has already been processed
+		#	if there is, the document won't be processed.
+		if not(fingerprint in self.fingerprints):
+			self.fingerprints.add(fingerprint)
+			self.num_docs_processed += 1
+			self.doc_num += 1
+			self.url_lookup[self.doc_num] = url
 
-		title_tag = soup.find('title')
-		if title_tag:
-			title_text = get_words(title_tag.get_text(" "), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
-			for word in title_text:
-				weighted.add(word)
-				tokens[word] *= 3
+			# Add weight to important words
 
-		for tag in soup.find_all(["b", "strong", "h1", "h2", "h3", "h4", "h5", "h6"]):
-			if tag:
-				words = get_words(tag.get_text(" "), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
-				for word in words:
-					if word not in weighted:
-						weighted.add(word)
-						tokens[word] *= 2
+			weighted = set()
 
-		# To calculate tf-idf score of docs, we are using the scheme lnc (logarithm, no idf, cosine normalization)
+			title_tag = soup.find('title')
+			if title_tag:
+				title_text = get_words(title_tag.get_text(" "), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
+				for word in title_text:
+					weighted.add(word)
+					tokens[word] *= 3
 
-		# cosine_normalization = 0
-		# for word, frequency in tokens.items():
-		# 	if word[0].isdigit():
-		# 		bucket = '0'
-		# 	else:
-		# 		bucket = word[0]
-		# 	normalized_tf = round(1 + math.log(float(frequency)), 15)
-		# 	self.index[bucket][word][self.doc_num] = normalized_tf # Calculate normalized TF
-		# 	cosine_normalization += normalized_tf ** 2
-		# cosine_normalization = math.sqrt(cosine_normalization)
+			for tag in soup.find_all(["b", "strong", "h1", "h2", "h3", "h4", "h5", "h6"]):
+				if tag:
+					words = get_words(tag.get_text(" "), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
+					for word in words:
+						if word not in weighted:
+							weighted.add(word)
+							tokens[word] *= 2
 
-		for word, frequency in tokens.items():
-			if word[0].isdigit():
-				bucket = '0'
-			else:
-				bucket = word[0]
-			normalized_tf = round(1 + math.log(float(frequency)), 15)
-			self.index[bucket][word][self.doc_num] = normalized_tf # Calculate normalized TF
+			# To calculate tf-idf score of docs, we are using the scheme lnc (logarithm, no idf, cosine normalization)
 
-		# Apply Cosine Normalization to the tf-idf score
+			# cosine_normalization = 0
+			# for word, frequency in tokens.items():
+			# 	if word[0].isdigit():
+			# 		bucket = '0'
+			# 	else:
+			# 		bucket = word[0]
+			# 	normalized_tf = round(1 + math.log(float(frequency)), 15)
+			# 	self.index[bucket][word][self.doc_num] = normalized_tf # Calculate normalized TF
+			# 	cosine_normalization += normalized_tf ** 2
+			# cosine_normalization = math.sqrt(cosine_normalization)
 
-		# for word in tokens.keys():
-		# 	if word[0].isdigit():
-		# 		bucket = '0'
-		# 	else:
-		# 		bucket = word[0]
-		# 	self.index[bucket][word][self.doc_num] = self.index[bucket][word][self.doc_num] / cosine_normalization
+			for word, frequency in tokens.items():
+				if word[0].isdigit():
+					bucket = '0'
+				else:
+					bucket = word[0]
+				normalized_tf = round(1 + math.log(float(frequency)), 15)
+				self.index[bucket][word][self.doc_num] = normalized_tf # Calculate normalized TF
 
-		if self.num_docs_processed == self.dump_threshold:			# If the threshold for number fo documents parsed is met,
-			self._dump()											#	the current partial index stored is dumped.
-		# else:
-		# 	print("No HTML: {}".format(json_file))
+			# Apply Cosine Normalization to the tf-idf score
+
+			# for word in tokens.keys():
+			# 	if word[0].isdigit():
+			# 		bucket = '0'
+			# 	else:
+			# 		bucket = word[0]
+			# 	self.index[bucket][word][self.doc_num] = self.index[bucket][word][self.doc_num] / cosine_normalization
+
+			if self.num_docs_processed == self.dump_threshold:			# If the threshold for number fo documents parsed is met,
+				self._dump()											#	the current partial index stored is dumped.
 
 	def _create_dumps(self, partial_index_num):							# Creates the dump buckets of each numbered partial index.
 		for char in 'abcdefghijklmnopqrstuvwxyz0':
