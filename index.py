@@ -74,7 +74,7 @@ class Index:
 		tokens = tokenize(soup.get_text(" "), r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+")
 
 		# Creates a fingerprint for the document
-		fingerprint = Simhash(tokens)
+		fingerprint = Simhash(tokens, 128)
 
 		# Checks if there is an exact duplicate of the document that has already been processed
 		#	if there is, the document won't be processed.
