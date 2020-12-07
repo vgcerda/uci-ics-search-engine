@@ -34,6 +34,7 @@ def load_byte_offset_table(byte_offset_table_path):
 
 class Search:
 	def __init__(self, query_string, url_table, byte_offset_table):
+		self.start_time = time.time()
 		self._query = tokenize_query(query_string, r"[a-zA-Z0-9]+[a-zA-Z0-9'-]*[a-zA-Z0-9]+") #all tokens are stemmed from the query
 		self._url_table = url_table
 		self._byte_offset_table = byte_offset_table
@@ -57,8 +58,9 @@ class Search:
 		self._get_relevant_postings()
 		self._calculate_Scores()
 		# self._calculate_Cosine_Scores()
-
 		self._index.close()
+
+		self.end_time = time.time() - self.start_time
 
 	def return_results(self, k):
 		# For outputting docs determined by tfidf and using a sorted list
@@ -81,6 +83,9 @@ class Search:
 				yield (i + 1, self._url_table[heapq.heappop(self.scores)[1]])
 			except IndexError:
 				return
+
+	def search_time(self):
+		return str(round(self.end_time * 1000, 5)) + " ms"
 
 	def _get_relevant_postings(self):
 		delete = set()
@@ -184,11 +189,8 @@ if __name__ == "__main__":
 	byte_offset_table = load_byte_offset_table(byte_offset_table_path)
 
 	query_string = input("Please Enter Your Query: ")
-	start_time = time.time()
-	t = time.time()
 	search = Search(query_string, url_table, byte_offset_table) #index is passed into the query class
-	print(time.time() - t)
 	search.print_results(30)
-	print("Search Time: {}".format(time.time() - start_time))
+	print("Search Time: {}".format(search.search_time()))
 	
 	
