@@ -8,7 +8,7 @@ import os
 import time
 import math
 from simhash import Simhash
-
+import timeit
 # Index class takes in the path of the set of data being indexed,
 #	the path where the index will be dumped, and the threshold
 #	of number of documents to be parsed before dumping the stored
